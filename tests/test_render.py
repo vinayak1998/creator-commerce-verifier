@@ -172,6 +172,32 @@ class SourceMapTests(unittest.TestCase):
                     rendered["unknownReason"], "SOURCE_MAPPING_FAILED"
                 )
 
+    def test_duplicate_yaml_keys_fail_closed(self) -> None:
+        canonical = DEFAULT_SOURCE_MAP.read_text(encoding="utf-8")
+        duplicate = "model_version: invented-model\n" + canonical
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "sources.yaml"
+            path.write_text(duplicate, encoding="utf-8")
+            rendered = render_verification_result(
+                ANSWERED_RESULT,
+                source_map_path=path,
+            )
+
+        self.assertEqual(rendered["status"], "UNKNOWN")
+        self.assertEqual(rendered["unknownReason"], "SOURCE_MAPPING_FAILED")
+
+    def test_invalid_utf8_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "sources.yaml"
+            path.write_bytes(b"\xff\xfe\x00")
+            rendered = render_verification_result(
+                ANSWERED_RESULT,
+                source_map_path=path,
+            )
+
+        self.assertEqual(rendered["status"], "UNKNOWN")
+        self.assertEqual(rendered["unknownReason"], "SOURCE_MAPPING_FAILED")
+
 
 class DeterministicRendererTests(unittest.TestCase):
     def test_answered_result_uses_checked_fields_and_rule_order(self) -> None:
@@ -329,6 +355,11 @@ class DeterministicRendererTests(unittest.TestCase):
         self.assertEqual(effective["status"], "UNKNOWN")
         self.assertEqual(effective["unknown"]["reason"], "SOURCE_MAPPING_FAILED")
         self.assertEqual(effective["proof"]["kernelCheck"], "PASSED")
+
+        rerendered = render_verification_result(effective)
+        self.assertEqual(rerendered["status"], "UNKNOWN")
+        self.assertEqual(rerendered["unknownReason"], "SOURCE_MAPPING_FAILED")
+        self.assertEqual(rerendered["citations"], [])
 
     def test_text_and_artifact_writer_preserve_exact_urls(self) -> None:
         rendered = render_verification_result(ANSWERED_RESULT)
