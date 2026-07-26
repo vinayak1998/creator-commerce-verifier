@@ -23,9 +23,10 @@ The deterministic, no-LLM path is complete:
   cited-answer renderer; and
 - no duplicate Python/JavaScript tax engine.
 
-The next milestone is the constrained natural-language formalizer. It may only
-propose the visible three-fact query or return `UNKNOWN`; the checked and
-rendered path already works without it.
+The constrained natural-language formalizer is now present. It may only propose
+the visible three-fact query or return `UNKNOWN`, and it deliberately stops
+before Lean. The next milestone is one local confirmation screen that connects
+this proposal to the already-working checked and rendered path.
 
 ## The question v0 models
 
@@ -81,6 +82,25 @@ the effective verification envelope on standard output. The immutable raw
 Lean certificate remains in `certificate.json`; if citation mapping fails, the
 effective envelope reports `UNKNOWN/SOURCE_MAPPING_FAILED` instead of hiding
 that failure behind the earlier kernel result.
+
+Propose—but do not yet verify—the three facts from natural language with:
+
+```bash
+export OPENAI_API_KEY=your_key
+export OPENAI_MODEL=your_explicit_responses_model
+python -m verifier.formalize \
+  "A brand sent me a Rs 30,000 product in FY 2024-25. I kept it and had no earlier benefits from that brand." \
+  --show-confirmation
+```
+
+The key is read only from the environment and the model must be selected
+explicitly; neither is stored in an artifact. The provider call uses the
+Responses API with strict Structured Outputs, following the
+[official OpenAI guide](https://developers.openai.com/api/docs/guides/structured-outputs).
+Its output remains untrusted: deterministic code validates it, converts whole
+rupees to paise, displays all three facts and fixed assumptions, and says that
+Lean has not run. Missing configuration, refusal, malformed output, or an
+uncertain/out-of-scope question is `UNKNOWN`.
 
 ## The intended end-to-end demo
 

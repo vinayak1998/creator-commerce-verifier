@@ -48,11 +48,15 @@ another intent is a scope change, not a prompt tweak.
 - individual/HUF provider carve-outs;
 - provider-borne tax and gross-up;
 - non-residents, mixed cash/in-kind benefits, or prior TDS;
-- source ingestion, general legal NLP, RAG, Z3, Bayesian reasoning, or a UI;
+- source ingestion, general legal NLP, RAG, Z3, Bayesian reasoning, or a
+  production application/UI framework;
 - current-law conclusions or production/legal reliance.
 
 Unsupported, missing, contradictory, or uncertain inputs must become
 `UNKNOWN`; they must never be filled in by an LLM.
+
+One minimal local confirmation screen may expose this exact path. It is an
+interface over the frozen scope, not permission to add intents or tax branches.
 
 ## What the proof does and does not establish
 

@@ -17,7 +17,8 @@
             "CONTRADICTORY_FACTS",
             "UNSUPPORTED_QUESTION",
             "WRONG_MODEL_VERSION",
-            "MALFORMED_INPUT"
+            "MALFORMED_INPUT",
+            "FORMALIZER_FAILED"
           ]
         },
         "details": {
