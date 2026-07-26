@@ -31,8 +31,10 @@ An answered, kernel-checked decision is user-facing `PROVED`. A checked Lean
 equality theorem passed the kernel. Evaluation errors, proof-check failures,
 and source-map failures also remain `UNKNOWN`.
 
-Each passed proof records the repository working directory, a model-build
-command, and the memory-bounded concrete-case command needed to replay it.
+Each passed proof preserves the exact small Lean project snapshot it checked,
+then records the snapshot-relative working directory, model-build command, and
+memory-bounded concrete-case command needed to replay it. No external hash or
+assurance layer is required for this teaching artifact.
 
 There is intentionally no `REFUTED` result in this assessment-only protocol.
 Adding a user-supplied claim to prove or refute would be a second intent and a

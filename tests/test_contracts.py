@@ -35,7 +35,15 @@ PROOF = {
         "    assess caseFacts = expectedDecision := by\n"
         "  decide\n"
     ),
-    "replayCwd": "/path/to/creator-commerce-verifier",
+    "modelSnapshot": [
+        "lean-toolchain",
+        "lakefile.toml",
+        "lake-manifest.json",
+        "CreatorCommerce.lean",
+        "CreatorCommerce/Section194R.lean",
+        "CreatorCommerce/CaseProtocol.lean",
+    ],
+    "replayCwd": "model",
     "replayBuildCommand": ["lake", "build"],
     "replayCommand": ["lake", "env", "lean", "GeneratedCase.lean"],
 }

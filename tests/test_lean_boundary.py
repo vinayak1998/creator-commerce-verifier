@@ -75,10 +75,13 @@ class LeanBoundaryIntegrationTests(unittest.TestCase):
                 Path(directory) / "case",
             )
             self.assertEqual(case.decision, EXPECTED_ANSWER)
-            self.assertTrue((case.case_directory / "Evaluate.lean").is_file())
-            self.assertTrue((case.case_directory / CHECK_FILENAME).is_file())
+            self.assertTrue((case.model_directory / "Evaluate.lean").is_file())
+            self.assertTrue((case.model_directory / CHECK_FILENAME).is_file())
             self.assertTrue((case.case_directory / "candidate.json").is_file())
             self.assertTrue((case.case_directory / "checked.json").is_file())
+            self.assertTrue(
+                (case.model_directory / "CreatorCommerce/Section194R.lean").is_file()
+            )
 
             detached_decision = case.decision
             detached_decision["answer"]["tdsDuePaise"] = 1

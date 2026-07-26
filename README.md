@@ -21,10 +21,10 @@ The first two deliberately small milestones are complete:
   query, and verification result; and
 - no duplicate Python/JavaScript tax engine.
 
-The deterministic two-pass generated-case boundary is complete. The next
-milestone is a small manual-JSON CLI and certificate wrapper. The online
-natural-language verifier remains deferred until the full path works without
-an LLM.
+The deterministic two-pass generated-case boundary and manual-JSON certificate
+CLI are complete. The next milestone is deterministic English rendering from
+the checked result and exact source map. The online natural-language verifier
+remains deferred until the full path works without an LLM.
 
 ## The question v0 models
 
@@ -60,6 +60,19 @@ python -m verifier.contracts formal-query-v0 examples/retained-30000.json
 
 The three JSON boundaries and their fail-closed status semantics are documented
 in [`contracts/README.md`](contracts/README.md).
+
+Run the canonical query through both Lean passes and preserve its replayable
+certificate with:
+
+```bash
+python -m verifier.verify examples/retained-30000.json
+```
+
+The command prints the versioned result as JSON and writes the accepted query,
+an exact replayable snapshot of the tiny Lean project, both generated Lean
+files, both Lean outputs, and `certificate.json` beneath the gitignored
+`.artifacts/` directory. It exits `0` only for `PROVED`; every `UNKNOWN`,
+including a checked unsupported result, exits nonzero.
 
 ## The intended end-to-end demo
 

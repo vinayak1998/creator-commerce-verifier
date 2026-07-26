@@ -22,6 +22,7 @@ CONTRACTS_DIRECTORY = REPOSITORY_ROOT / "contracts"
 FORMAL_QUERY = "formal-query-v0"
 FORMALIZATION_PROPOSAL = "formalization-proposal-v0"
 VERIFICATION_RESULT = "verification-result-v0"
+MODEL_VERSION = "in-s194r-fy2024-25-v0"
 CHECKED_DECISION_REFERENCE = (
     "urn:creator-commerce-verifier:schema:verification-result-v0"
     "#/$defs/checkedDecision"
