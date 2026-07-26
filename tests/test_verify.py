@@ -142,8 +142,20 @@ class ManualJsonCliTests(unittest.TestCase):
             self.assertEqual(completed.returncode, 0, completed.stderr)
             result = json.loads(completed.stdout)
             self.assertEqual(result["status"], "PROVED")
+            self.assertEqual(result["schemaVersion"], "rendered-answer-v0")
+            self.assertEqual(
+                [citation["ruleId"] for citation in result["citations"]],
+                [
+                    "IT-194R-SCOPE",
+                    "IT-194R-RETAINED",
+                    "IT-194R-THRESHOLD",
+                    "IT-194R-RELEASEGATE",
+                ],
+            )
             self.assertIn("Artifacts:", completed.stderr)
             self.assertTrue((root / "artifacts" / "cli-case" / "certificate.json").is_file())
+            self.assertTrue((root / "artifacts" / "cli-case" / "answer.json").is_file())
+            self.assertTrue((root / "artifacts" / "cli-case" / "answer.txt").is_file())
 
     def test_cli_returns_unknown_for_wrong_model_version_without_running_lean(self) -> None:
         query = copy.deepcopy(RETAINED_THIRTY_THOUSAND)
@@ -201,7 +213,7 @@ class ManualJsonCliTests(unittest.TestCase):
         self.assertEqual(completed.returncode, 1)
         result = json.loads(completed.stdout)
         self.assertEqual(result["status"], "UNKNOWN")
-        self.assertEqual(result["unknown"]["reason"], "UNSUPPORTED_INPUT")
+        self.assertEqual(result["unknownReason"], "UNSUPPORTED_INPUT")
 
     def test_valid_query_artifact_failure_is_internal_not_malformed(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

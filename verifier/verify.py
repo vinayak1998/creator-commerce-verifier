@@ -24,6 +24,11 @@ from verifier.contracts import (
     validate,
 )
 from verifier.lean_boundary import CheckedCase, LeanBoundaryError, evaluate_and_check
+from verifier.render import (
+    render_text,
+    render_verification_result,
+    write_rendered_artifacts,
+)
 
 
 CERTIFICATE_FILENAME = "certificate.json"
@@ -129,6 +134,27 @@ def _internal_error_result(formal_query: dict[str, Any]) -> dict[str, Any]:
     }
     validate(VERIFICATION_RESULT, result)
     return result
+
+
+def _effective_verification_result(
+    result: dict[str, Any], rendered: dict[str, Any]
+) -> dict[str, Any]:
+    """Reflect a presentation failure without discarding the checked evidence."""
+
+    if rendered.get("unknownReason") != "SOURCE_MAPPING_FAILED":
+        return copy.deepcopy(result)
+
+    effective = copy.deepcopy(result)
+    effective["status"] = "UNKNOWN"
+    effective["unknown"] = {
+        "reason": "SOURCE_MAPPING_FAILED",
+        "details": (
+            "Lean checking completed, but the frozen public rule sources could "
+            "not be mapped safely."
+        ),
+    }
+    validate(VERIFICATION_RESULT, effective)
+    return effective
 
 
 def _bounded_failure_text(text: str) -> tuple[str, bool]:
@@ -245,6 +271,11 @@ def main() -> int:
     )
     parser.add_argument("--case-name")
     parser.add_argument("--timeout", type=_positive_timeout, default=30.0)
+    parser.add_argument(
+        "--format",
+        choices=("answer-json", "answer-text", "verification-json"),
+        default="answer-json",
+    )
     arguments = parser.parse_args()
 
     try:
@@ -288,9 +319,24 @@ def main() -> int:
         _print_json(_internal_error_result(formal_query), stream=sys.stdout)
         return 1
 
-    _print_json(run.result, stream=sys.stdout)
+    try:
+        rendered = render_verification_result(run.result)
+        write_rendered_artifacts(run.artifact_directory, rendered)
+    except OSError:
+        _print_json(_internal_error_result(formal_query), stream=sys.stdout)
+        return 1
+
+    if arguments.format == "verification-json":
+        _print_json(
+            _effective_verification_result(run.result, rendered),
+            stream=sys.stdout,
+        )
+    elif arguments.format == "answer-text":
+        print(render_text(rendered), end="")
+    else:
+        _print_json(rendered, stream=sys.stdout)
     print(f"Artifacts: {run.artifact_directory}", file=sys.stderr)
-    return 0 if run.result["status"] == "PROVED" else 1
+    return 0 if rendered["status"] == "PROVED" else 1
 
 
 if __name__ == "__main__":

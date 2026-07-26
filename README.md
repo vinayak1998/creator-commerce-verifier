@@ -11,20 +11,21 @@ advice.
 
 ## What exists today
 
-The first two deliberately small milestones are complete:
+The deterministic, no-LLM path is complete:
 
 - one well-commented Lean world model;
 - exactly three variable facts;
 - four stable rule IDs linked to official source locations;
-- five kernel-checked examples, including an explicit unsupported result; and
+- five kernel-checked examples, including an explicit unsupported result;
 - strict versioned contracts for the untrusted proposal, accepted three-fact
-  query, and verification result; and
+  query, verification result, and rendered answer;
+- a two-pass generated Lean equality, portable certificate, and deterministic
+  cited-answer renderer; and
 - no duplicate Python/JavaScript tax engine.
 
-The deterministic two-pass generated-case boundary and manual-JSON certificate
-CLI are complete. The next milestone is deterministic English rendering from
-the checked result and exact source map. The online natural-language verifier
-remains deferred until the full path works without an LLM.
+The next milestone is the constrained natural-language formalizer. It may only
+propose the visible three-fact query or return `UNKNOWN`; the checked and
+rendered path already works without it.
 
 ## The question v0 models
 
@@ -58,7 +59,7 @@ python -m pip install -r requirements.txt
 python -m verifier.contracts formal-query-v0 examples/retained-30000.json
 ```
 
-The three JSON boundaries and their fail-closed status semantics are documented
+The four JSON boundaries and their fail-closed status semantics are documented
 in [`contracts/README.md`](contracts/README.md).
 
 Run the canonical query through both Lean passes and preserve its replayable
@@ -68,11 +69,18 @@ certificate with:
 python -m verifier.verify examples/retained-30000.json
 ```
 
-The command prints the versioned result as JSON and writes the accepted query,
-an exact replayable snapshot of the tiny Lean project, both generated Lean
-files, both Lean outputs, and `certificate.json` beneath the gitignored
-`.artifacts/` directory. It exits `0` only for `PROVED`; every `UNKNOWN`,
-including a checked unsupported result, exits nonzero.
+The command prints the deterministic cited answer as JSON and writes the
+accepted query, an exact replayable snapshot of the tiny Lean project, both
+generated Lean files, both Lean outputs, `certificate.json`, `answer.json`, and
+`answer.txt` beneath the gitignored `.artifacts/` directory. It exits `0` only
+for `PROVED`; every `UNKNOWN`, including a checked unsupported result, exits
+nonzero.
+
+Use `--format answer-text` for plain text or `--format verification-json` for
+the effective verification envelope on standard output. The immutable raw
+Lean certificate remains in `certificate.json`; if citation mapping fails, the
+effective envelope reports `UNKNOWN/SOURCE_MAPPING_FAILED` instead of hiding
+that failure behind the earlier kernel result.
 
 ## The intended end-to-end demo
 
