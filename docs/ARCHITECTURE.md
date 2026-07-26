@@ -57,8 +57,10 @@ wording, but it may not add facts, numbers, conclusions, or citations.
 1. **Done:** compile the tiny world model and handwritten example theorems.
 2. **Done:** define one versioned JSON `FormalQuery` containing only the three
    facts, plus the adjacent untrusted-proposal and checked-result envelopes.
-3. **Next:** deterministically generate a replayable Lean case theorem.
-4. Run Lean and preserve the checked result/artifact.
+3. **Done:** deterministically generate a replayable Lean case theorem.
+4. **Done:** run Lean twice: first to obtain its candidate `Decision`, then to
+   kernel-check a concrete equality containing that decision. Preserve both
+   Lean sources and both structured outputs.
 5. Render a plain-English answer from the result and exact rule map.
 6. Only then add a constrained NL-to-`FormalQuery` adapter.
 

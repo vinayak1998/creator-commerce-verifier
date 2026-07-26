@@ -21,8 +21,9 @@ The first two deliberately small milestones are complete:
   query, and verification result; and
 - no duplicate Python/JavaScript tax engine.
 
-The deterministic generated-case boundary is the next milestone. The online
-natural-language verifier remains deferred until that boundary works without
+The deterministic two-pass generated-case boundary is complete. The next
+milestone is a small manual-JSON CLI and certificate wrapper. The online
+natural-language verifier remains deferred until the full path works without
 an LLM.
 
 ## The question v0 models

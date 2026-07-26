@@ -31,6 +31,9 @@ An answered, kernel-checked decision is user-facing `PROVED`. A checked Lean
 equality theorem passed the kernel. Evaluation errors, proof-check failures,
 and source-map failures also remain `UNKNOWN`.
 
+Each passed proof records the repository working directory, a model-build
+command, and the memory-bounded concrete-case command needed to replay it.
+
 There is intentionally no `REFUTED` result in this assessment-only protocol.
 Adding a user-supplied claim to prove or refute would be a second intent and a
 scope change.
