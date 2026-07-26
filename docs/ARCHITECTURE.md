@@ -51,7 +51,7 @@ the answer, numbers, conclusion, or citations.
 | Domain knowledge | Two official source entries and four reviewed-as-experimental rule mappings |
 | Domain formalizer | Human-authored, commented `Section194R.lean` in v0 |
 | Symbolic world model | `CreatorCommerce/Section194R.lean` |
-| Auto-formalizer | Deferred: NL to a visible three-fact record |
+| Auto-formalizer | Untrusted strict-output extraction into a visible three-fact proposal |
 | Facts + theorems | Concrete facts plus an equality against `assess` |
 | Solver/prover | Lean reduction and kernel checking; no separate Z3 layer |
 | Answer + proof | Checked `Decision`, including `RuleId` values |
@@ -68,7 +68,11 @@ the answer, numbers, conclusion, or citations.
    Lean sources and both structured outputs.
 5. **Done:** render a plain-English answer from checked fields and map only its
    checked `RuleId` values through the exact four-rule source map.
-6. **Next:** add a constrained NL-to-`FormalQuery` adapter.
+6. **Done:** add a constrained NL-to-`FormalQuery` proposal adapter. It uses a
+   provider-only strict-output schema, then deterministically validates the
+   public proposal and stops before Lean.
+7. **Next:** add one local screen that requires confirmation before sending the
+   exact proposed `FormalQuery` to the existing verifier.
 
 A proposed feature belongs in v0 only if it makes one of these boxes visible
 or executes the one supported question family. Everything else stays deferred.

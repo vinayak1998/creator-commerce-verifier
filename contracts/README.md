@@ -23,6 +23,10 @@ The natural-language adapter is untrusted. It can propose either:
 - `UNKNOWN`, with a bounded reason and explanation.
 
 Only an explicitly confirmed `READY` proposal may enter verification.
+The provider receives a smaller strict-output extraction schema; deterministic
+code converts whole rupees to paise and then validates the canonical public
+proposal contract. Provider, transport, refusal, or output-shape failures use
+`UNKNOWN/FORMALIZER_FAILED` and never reach Lean.
 
 ## `VerificationResult v0`
 

@@ -127,6 +127,19 @@ class FormalizationProposalContractTests(unittest.TestCase):
         with self.assertRaises(ContractValidationError):
             validate(FORMALIZATION_PROPOSAL, proposal)
 
+    def test_formalizer_failure_is_an_explicit_unknown_reason(self) -> None:
+        validate(
+            FORMALIZATION_PROPOSAL,
+            {
+                "schemaVersion": "formalization-proposal-v0",
+                "status": "UNKNOWN",
+                "unknown": {
+                    "reason": "FORMALIZER_FAILED",
+                    "details": "The untrusted provider did not return usable output.",
+                },
+            },
+        )
+
 
 class VerificationResultContractTests(unittest.TestCase):
     def test_answered_checked_decision_is_proved(self) -> None:
