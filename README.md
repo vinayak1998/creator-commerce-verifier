@@ -11,16 +11,19 @@ advice.
 
 ## What exists today
 
-The first, deliberately small milestone is complete:
+The first two deliberately small milestones are complete:
 
 - one well-commented Lean world model;
 - exactly three variable facts;
 - four stable rule IDs linked to official source locations;
 - five kernel-checked examples, including an explicit unsupported result; and
+- strict versioned contracts for the untrusted proposal, accepted three-fact
+  query, and verification result; and
 - no duplicate Python/JavaScript tax engine.
 
-The online natural-language verifier is the next milestone, not something this
-initial commit pretends to have finished.
+The deterministic generated-case boundary is the next milestone. The online
+natural-language verifier remains deferred until that boundary works without
+an LLM.
 
 ## The question v0 models
 
@@ -46,6 +49,16 @@ lake build
 
 That command compiles the model and asks Lean's kernel to check the concrete
 examples in [`CreatorCommerce/Section194R.lean`](CreatorCommerce/Section194R.lean).
+
+Validate the canonical JSON query with:
+
+```bash
+python -m pip install -r requirements.txt
+python -m verifier.contracts formal-query-v0 examples/retained-30000.json
+```
+
+The three JSON boundaries and their fail-closed status semantics are documented
+in [`contracts/README.md`](contracts/README.md).
 
 ## The intended end-to-end demo
 

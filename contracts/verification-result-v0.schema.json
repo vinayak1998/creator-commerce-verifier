@@ -1,0 +1,299 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:creator-commerce-verifier:schema:verification-result-v0",
+  "title": "VerificationResult v0",
+  "description": "A user-facing result from the deterministic Lean verification boundary.",
+  "$defs": {
+    "moneyPaise": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "leanRuleId": {
+      "type": "string",
+      "enum": [
+        "s194rScope",
+        "influencerProduct",
+        "annualThreshold",
+        "inKindReleaseGate"
+      ]
+    },
+    "answeredDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "answer"],
+      "properties": {
+        "kind": {
+          "const": "answered"
+        },
+        "answer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "benefitQualifies",
+            "currentBenefitPaise",
+            "aggregateBenefitsPaise",
+            "thresholdExceeded",
+            "tdsDuePaise",
+            "releaseGateRequired",
+            "appliedRules"
+          ],
+          "properties": {
+            "benefitQualifies": {"type": "boolean"},
+            "currentBenefitPaise": {"$ref": "#/$defs/moneyPaise"},
+            "aggregateBenefitsPaise": {"$ref": "#/$defs/moneyPaise"},
+            "thresholdExceeded": {"type": "boolean"},
+            "tdsDuePaise": {"$ref": "#/$defs/moneyPaise"},
+            "releaseGateRequired": {"type": "boolean"},
+            "appliedRules": {
+              "type": "array",
+              "items": {"$ref": "#/$defs/leanRuleId"},
+              "uniqueItems": true
+            }
+          }
+        }
+      }
+    },
+    "unsupportedDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "reason", "citedRules"],
+      "properties": {
+        "kind": {
+          "const": "unsupported"
+        },
+        "reason": {
+          "const": "priorBenefitsNeedPriorTds"
+        },
+        "citedRules": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/leanRuleId"},
+          "uniqueItems": true
+        }
+      }
+    },
+    "checkedDecision": {
+      "oneOf": [
+        {"$ref": "#/$defs/answeredDecision"},
+        {"$ref": "#/$defs/unsupportedDecision"}
+      ]
+    },
+    "proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checker",
+        "kernelCheck",
+        "theoremName",
+        "theoremSource",
+        "replayCommand"
+      ],
+      "properties": {
+        "checker": {
+          "const": "lean-kernel"
+        },
+        "kernelCheck": {
+          "const": "PASSED"
+        },
+        "theoremName": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+        },
+        "theoremSource": {
+          "type": "string",
+          "minLength": 1
+        },
+        "replayCommand": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "unknown": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reason", "details"],
+      "properties": {
+        "reason": {
+          "type": "string",
+          "enum": [
+            "UNSUPPORTED_INPUT",
+            "LEAN_EVALUATION_FAILED",
+            "LEAN_CHECK_FAILED",
+            "SOURCE_MAPPING_FAILED",
+            "INTERNAL_ERROR"
+          ]
+        },
+        "details": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "modelVersion",
+        "status",
+        "formalQuery",
+        "decision",
+        "proof"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "verification-result-v0"
+        },
+        "modelVersion": {
+          "const": "in-s194r-fy2024-25-v0"
+        },
+        "status": {
+          "const": "PROVED"
+        },
+        "formalQuery": {
+          "$ref": "urn:creator-commerce-verifier:schema:formal-query-v0"
+        },
+        "decision": {
+          "$ref": "#/$defs/answeredDecision"
+        },
+        "proof": {
+          "$ref": "#/$defs/proof"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "modelVersion",
+        "status",
+        "formalQuery",
+        "decision",
+        "proof",
+        "unknown"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "verification-result-v0"
+        },
+        "modelVersion": {
+          "const": "in-s194r-fy2024-25-v0"
+        },
+        "status": {
+          "const": "UNKNOWN"
+        },
+        "formalQuery": {
+          "$ref": "urn:creator-commerce-verifier:schema:formal-query-v0"
+        },
+        "decision": {
+          "$ref": "#/$defs/unsupportedDecision"
+        },
+        "proof": {
+          "$ref": "#/$defs/proof"
+        },
+        "unknown": {
+          "allOf": [
+            {"$ref": "#/$defs/unknown"},
+            {
+              "properties": {
+                "reason": {"const": "UNSUPPORTED_INPUT"}
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "modelVersion",
+        "status",
+        "formalQuery",
+        "unknown"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "verification-result-v0"
+        },
+        "modelVersion": {
+          "const": "in-s194r-fy2024-25-v0"
+        },
+        "status": {
+          "const": "UNKNOWN"
+        },
+        "formalQuery": {
+          "$ref": "urn:creator-commerce-verifier:schema:formal-query-v0"
+        },
+        "unknown": {
+          "allOf": [
+            {"$ref": "#/$defs/unknown"},
+            {
+              "properties": {
+                "reason": {
+                  "enum": [
+                    "LEAN_EVALUATION_FAILED",
+                    "LEAN_CHECK_FAILED",
+                    "INTERNAL_ERROR"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "modelVersion",
+        "status",
+        "formalQuery",
+        "decision",
+        "proof",
+        "unknown"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "verification-result-v0"
+        },
+        "modelVersion": {
+          "const": "in-s194r-fy2024-25-v0"
+        },
+        "status": {
+          "const": "UNKNOWN"
+        },
+        "formalQuery": {
+          "$ref": "urn:creator-commerce-verifier:schema:formal-query-v0"
+        },
+        "decision": {
+          "$ref": "#/$defs/checkedDecision"
+        },
+        "proof": {
+          "$ref": "#/$defs/proof"
+        },
+        "unknown": {
+          "allOf": [
+            {"$ref": "#/$defs/unknown"},
+            {
+              "properties": {
+                "reason": {"const": "SOURCE_MAPPING_FAILED"}
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
