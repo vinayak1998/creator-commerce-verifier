@@ -22,6 +22,10 @@ CONTRACTS_DIRECTORY = REPOSITORY_ROOT / "contracts"
 FORMAL_QUERY = "formal-query-v0"
 FORMALIZATION_PROPOSAL = "formalization-proposal-v0"
 VERIFICATION_RESULT = "verification-result-v0"
+CHECKED_DECISION_REFERENCE = (
+    "urn:creator-commerce-verifier:schema:verification-result-v0"
+    "#/$defs/checkedDecision"
+)
 
 SCHEMA_FILES = {
     FORMAL_QUERY: "formal-query-v0.schema.json",
@@ -75,6 +79,16 @@ def load_json(path: Path) -> Any:
         )
 
 
+def loads_json(text: str) -> Any:
+    """Decode JSON text with the same exact-number and duplicate-key rules."""
+
+    return json.loads(
+        text,
+        object_pairs_hook=_reject_duplicate_keys,
+        parse_float=_reject_non_integer_number,
+    )
+
+
 @lru_cache(maxsize=1)
 def _schemas() -> dict[str, dict[str, Any]]:
     loaded: dict[str, dict[str, Any]] = {}
@@ -115,6 +129,19 @@ def validate(contract: str, value: Any) -> None:
         path = ".".join(str(part) for part in failure.absolute_path) or "$"
         messages.append(f"{path}: {failure.message}")
     raise ContractValidationError(contract, messages)
+
+
+def validate_reference(reference: str, value: Any) -> None:
+    """Validate against a named fragment of a registered contract schema."""
+
+    validator = ExactDraft202012Validator(
+        {"$ref": reference},
+        registry=_registry(),
+    )
+    failures = list(validator.iter_errors(value))
+    if failures:
+        messages = [failure.message for failure in failures]
+        raise ContractValidationError(reference, messages)
 
 
 def load_and_validate(contract: str, path: Path) -> Any:
