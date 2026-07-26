@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:creator-commerce-verifier:schema:formal-query-v0",
+  "title": "FormalQuery v0",
+  "description": "The complete accepted input to the frozen FY 2024-25 Section 194R model.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "modelVersion", "facts"],
+  "properties": {
+    "schemaVersion": {
+      "const": "formal-query-v0"
+    },
+    "modelVersion": {
+      "const": "in-s194r-fy2024-25-v0"
+    },
+    "facts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "productFmvPaise",
+        "productDisposition",
+        "priorBenefitsPaise"
+      ],
+      "properties": {
+        "productFmvPaise": {
+          "description": "Accepted fair-market value. Online v0 inputs are whole rupees represented as paise.",
+          "type": "integer",
+          "minimum": 0,
+          "multipleOf": 100
+        },
+        "productDisposition": {
+          "type": "string",
+          "enum": ["retained", "returned"]
+        },
+        "priorBenefitsPaise": {
+          "description": "Earlier Section 194R benefits from the same provider in the financial year. Values above the threshold remain valid input so Lean can return unsupported.",
+          "type": "integer",
+          "minimum": 0,
+          "multipleOf": 100
+        }
+      }
+    }
+  }
+}

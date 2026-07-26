@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:creator-commerce-verifier:schema:formalization-proposal-v0",
+  "title": "FormalizationProposal v0",
+  "description": "Untrusted natural-language extraction. Only READY proposals can be confirmed and promoted to FormalQuery.",
+  "$defs": {
+    "unknown": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reason", "details"],
+      "properties": {
+        "reason": {
+          "type": "string",
+          "enum": [
+            "MISSING_FACT",
+            "AMBIGUOUS_FACT",
+            "CONTRADICTORY_FACTS",
+            "UNSUPPORTED_QUESTION",
+            "WRONG_MODEL_VERSION",
+            "MALFORMED_INPUT"
+          ]
+        },
+        "details": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "status", "formalQuery"],
+      "properties": {
+        "schemaVersion": {
+          "const": "formalization-proposal-v0"
+        },
+        "status": {
+          "const": "READY"
+        },
+        "formalQuery": {
+          "$ref": "urn:creator-commerce-verifier:schema:formal-query-v0"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "status", "unknown"],
+      "properties": {
+        "schemaVersion": {
+          "const": "formalization-proposal-v0"
+        },
+        "status": {
+          "const": "UNKNOWN"
+        },
+        "unknown": {
+          "$ref": "#/$defs/unknown"
+        }
+      }
+    }
+  ]
+}
