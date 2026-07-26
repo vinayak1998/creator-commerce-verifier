@@ -1,0 +1,83 @@
+# Creator Commerce Verifier
+
+A tiny Lean-first learning POC: turn one kind of creator-commerce tax question
+into explicit facts, check the answer against a symbolic world model, and cite
+the exact encoded rules.
+
+This repository exists to support a short article about the architecture
+publicly described around Pramaana Labs. It is an independent teaching demo,
+not a reproduction of Pramaana, not a Wishlink project, and not legal or tax
+advice.
+
+## What exists today
+
+The first, deliberately small milestone is complete:
+
+- one well-commented Lean world model;
+- exactly three variable facts;
+- four stable rule IDs linked to official source locations;
+- five kernel-checked examples, including an explicit unsupported result; and
+- no duplicate Python/JavaScript tax engine.
+
+The online natural-language verifier is the next milestone, not something this
+initial commit pretends to have finished.
+
+## The question v0 models
+
+A company brand gives a wholly in-kind product to a resident creator during
+FY 2024-25. Given its value, whether it was retained or returned, and earlier
+benefits from the same provider, the model returns:
+
+- whether the current product qualifies as a benefit;
+- the financial-year aggregate;
+- the modeled TDS due; and
+- whether tax payment/evidence is required before release.
+
+All other facts are fixed assumptions. See [the frozen scope](docs/SCOPE.md)
+before reading the code.
+
+## Run the proof checks
+
+Install Lean through `elan`, then run:
+
+```bash
+lake build
+```
+
+That command compiles the model and asks Lean's kernel to check the concrete
+examples in [`CreatorCommerce/Section194R.lean`](CreatorCommerce/Section194R.lean).
+
+## The intended end-to-end demo
+
+```text
+question in natural language
+  -> visible, confirmable three-fact interpretation
+  -> deterministic Lean equality
+  -> kernel-checked decision or explicit UNKNOWN
+  -> constrained English answer with exact rule citations
+```
+
+The language model is allowed to propose the typed interpretation. It is not
+the legal oracle, calculator, proof checker, or citation generator. Read the
+[architecture note](docs/ARCHITECTURE.md) for the component-by-component trust
+boundary and implementation order.
+
+## Why this repository is separate
+
+The predecessor experiment, `collabproof`, explored too many concerns at once:
+multiple tax branches, multiple reasoning engines, evaluation, source
+governance, a browser demo, and assurance machinery. Those were useful
+experiments, but they obscured the central learning loop.
+
+This repo restarts in the opposite order: one model, one question family, one
+checked result, then one interface layer at a time.
+
+## Legal and source status
+
+The model is a simplified historical FY 2024-25 interpretation of Section
+194R and CBDT Circular 12/2022. The source map has not received independent tax
+review. Lean proves consequences of the encoding and supplied facts; it does
+not prove that the encoding is correct law or that the facts are true.
+
+See [`sources.yaml`](sources.yaml) for official URLs, exact locations, fixed
+assumptions, and review status.

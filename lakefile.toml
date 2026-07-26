@@ -1,0 +1,6 @@
+name = "creator-commerce-verifier"
+version = "0.1.0"
+defaultTargets = ["CreatorCommerce"]
+
+[[lean_lib]]
+name = "CreatorCommerce"

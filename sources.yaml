@@ -1,0 +1,47 @@
+schema_version: 1
+model_version: in-s194r-fy2024-25-v0
+jurisdiction: IN
+period: FY2024-25
+retrieved_on: 2026-07-26
+review_status: needs_independent_tax_review
+
+sources:
+  - id: ITA-1961-S194R
+    title: Income-tax Act, 1961 - Section 194R
+    authority: Central Board of Direct Taxes, Department of Revenue, Ministry of Finance, Government of India
+    official_url: https://www.incometaxindia.gov.in/w/section-194r-4
+
+  - id: CBDT-CIRCULAR-12-2022
+    title: CBDT Circular No. 12 of 2022
+    authority: Central Board of Direct Taxes, Department of Revenue, Ministry of Finance, Government of India
+    official_url: https://incometaxindia.gov.in/communications/circular/circular-no-12-2022.pdf
+
+rules:
+  IT-194R-SCOPE:
+    lean_id: s194rScope
+    source_id: ITA-1961-S194R
+    location: Section 194R(1), main clause
+    encoded_interpretation: A company provider supplies a resident creator a business/profession benefit and the encoded rate is 10 percent.
+    fixed_assumptions: [company provider, business/profession nexus, resident creator, PAN furnished]
+
+  IT-194R-RETAINED:
+    lean_id: influencerProduct
+    source_id: CBDT-CIRCULAR-12-2022
+    location: Question 6, social-media influencer example, official PDF pages 4-5
+    encoded_interpretation: A genuinely returned promotional product is not a benefit in this example; a retained product is.
+    fixed_assumptions: [entered disposition is factually correct, entered FMV is accepted]
+
+  IT-194R-THRESHOLD:
+    lean_id: annualThreshold
+    source_id: ITA-1961-S194R
+    location: Section 194R(1), second proviso
+    encoded_interpretation: The v0 obligation does not trigger unless same-provider FY aggregate benefits exceed Rs 20,000.
+    fixed_assumptions: [prior benefits are correctly aggregated, prior benefits do not already exceed the threshold]
+
+  IT-194R-RELEASEGATE:
+    lean_id: inKindReleaseGate
+    source_id: ITA-1961-S194R
+    additional_source_id: CBDT-CIRCULAR-12-2022
+    location: Section 194R(1), first proviso; Circular 12/2022, Question 9, official PDF pages 5-6
+    encoded_interpretation: When TDS is due on this wholly in-kind benefit, payment must be ensured before release.
+    fixed_assumptions: [benefit is wholly in kind, creator bears the tax, provider gross-up is outside v0]
