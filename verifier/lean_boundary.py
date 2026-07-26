@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import copy
 import json
+import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -17,6 +18,7 @@ from typing import Any
 from verifier.contracts import (
     CHECKED_DECISION_REFERENCE,
     FORMAL_QUERY,
+    MODEL_VERSION,
     REPOSITORY_ROOT,
     ContractValidationError,
     loads_json,
@@ -27,13 +29,22 @@ from verifier.contracts import (
 
 CANDIDATE_SCHEMA_VERSION = "lean-candidate-v0"
 CHECKED_SCHEMA_VERSION = "lean-checked-v0"
-MODEL_VERSION = "in-s194r-fy2024-25-v0"
 
 EVALUATE_FILENAME = "Evaluate.lean"
 CHECK_FILENAME = "GeneratedCase.lean"
 CANDIDATE_FILENAME = "candidate.json"
 CHECKED_FILENAME = "checked.json"
+MODEL_DIRECTORY_NAME = "model"
 LEAN_MEMORY_MEGABYTES = 512
+
+MODEL_SNAPSHOT_FILES = (
+    Path("lean-toolchain"),
+    Path("lakefile.toml"),
+    Path("lake-manifest.json"),
+    Path("CreatorCommerce.lean"),
+    Path("CreatorCommerce/Section194R.lean"),
+    Path("CreatorCommerce/CaseProtocol.lean"),
+)
 
 DISPOSITION_LEAN = {
     "retained": ".retained",
@@ -111,16 +122,24 @@ class CheckedCase:
             "--trust=0",
             f"--memory={LEAN_MEMORY_MEGABYTES}",
             "--run",
-            str(self.case_directory / CHECK_FILENAME),
+            CHECK_FILENAME,
         ]
 
     @property
     def replay_cwd(self) -> Path:
-        return REPOSITORY_ROOT
+        return self.model_directory
 
     @property
     def replay_build_command(self) -> list[str]:
         return ["lake", "build"]
+
+    @property
+    def model_directory(self) -> Path:
+        return self.case_directory / MODEL_DIRECTORY_NAME
+
+    @property
+    def model_snapshot_files(self) -> list[str]:
+        return [str(path) for path in MODEL_SNAPSHOT_FILES]
 
 
 def _facts_source(facts: dict[str, Any]) -> str:
@@ -216,7 +235,13 @@ def main : IO Unit := do
 """
 
 
-def _run_lean(source_path: Path, *, trust_zero: bool, timeout: float) -> str:
+def _run_lean(
+    source_path: Path,
+    *,
+    trust_zero: bool,
+    timeout: float,
+    working_directory: Path = REPOSITORY_ROOT,
+) -> str:
     command = ["lake", "env", "lean"]
     if trust_zero:
         command.append("--trust=0")
@@ -227,13 +252,22 @@ def _run_lean(source_path: Path, *, trust_zero: bool, timeout: float) -> str:
     try:
         completed = subprocess.run(
             command,
-            cwd=REPOSITORY_ROOT,
+            cwd=working_directory,
             check=False,
             capture_output=True,
             text=True,
             timeout=timeout,
         )
-    except (OSError, subprocess.TimeoutExpired) as error:
+    except subprocess.TimeoutExpired as error:
+        stdout = error.stdout.decode() if isinstance(error.stdout, bytes) else error.stdout
+        stderr = error.stderr.decode() if isinstance(error.stderr, bytes) else error.stderr
+        raise LeanBoundaryError(
+            "lean-process",
+            str(error),
+            stdout=stdout or "",
+            stderr=stderr or "",
+        ) from error
+    except OSError as error:
         raise LeanBoundaryError("lean-process", str(error)) from error
 
     if completed.returncode != 0:
@@ -255,19 +289,28 @@ def _run_lean(source_path: Path, *, trust_zero: bool, timeout: float) -> str:
     return lines[0]
 
 
-def _build_model(*, timeout: float) -> None:
-    """Bring imported `.olean` files up to date with checked-in Lean sources."""
+def _build_model(*, timeout: float, working_directory: Path) -> None:
+    """Build the preserved Lean model snapshot before either generated pass."""
 
     try:
         completed = subprocess.run(
             ["lake", "build"],
-            cwd=REPOSITORY_ROOT,
+            cwd=working_directory,
             check=False,
             capture_output=True,
             text=True,
             timeout=timeout,
         )
-    except (OSError, subprocess.TimeoutExpired) as error:
+    except subprocess.TimeoutExpired as error:
+        stdout = error.stdout.decode() if isinstance(error.stdout, bytes) else error.stdout
+        stderr = error.stderr.decode() if isinstance(error.stderr, bytes) else error.stderr
+        raise LeanBoundaryError(
+            "lean-build",
+            str(error),
+            stdout=stdout or "",
+            stderr=stderr or "",
+        ) from error
+    except OSError as error:
         raise LeanBoundaryError("lean-build", str(error)) from error
 
     if completed.returncode != 0:
@@ -277,6 +320,18 @@ def _build_model(*, timeout: float) -> None:
             stdout=completed.stdout,
             stderr=completed.stderr,
         )
+
+
+def _snapshot_model(case_directory: Path) -> Path:
+    """Copy the exact, small Lean project needed to replay this case."""
+
+    model_directory = case_directory / MODEL_DIRECTORY_NAME
+    model_directory.mkdir()
+    for relative_path in MODEL_SNAPSHOT_FILES:
+        destination = model_directory / relative_path
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(REPOSITORY_ROOT / relative_path, destination)
+    return model_directory
 
 
 def _parse_case_output(
@@ -330,13 +385,19 @@ def evaluate_and_check(
     formal_query = copy.deepcopy(formal_query)
     validate(FORMAL_QUERY, formal_query)
     case_directory.mkdir(parents=True, exist_ok=False)
-    _build_model(timeout=timeout)
+    model_directory = _snapshot_model(case_directory)
+    _build_model(timeout=timeout, working_directory=model_directory)
 
     evaluate_source = generate_evaluate_source(formal_query)
-    evaluate_path = case_directory / EVALUATE_FILENAME
+    evaluate_path = model_directory / EVALUATE_FILENAME
     evaluate_path.write_text(evaluate_source, encoding="utf-8")
 
-    candidate_text = _run_lean(evaluate_path, trust_zero=False, timeout=timeout)
+    candidate_text = _run_lean(
+        evaluate_path,
+        trust_zero=False,
+        timeout=timeout,
+        working_directory=model_directory,
+    )
     candidate = _parse_case_output(
         candidate_text,
         expected_schema_version=CANDIDATE_SCHEMA_VERSION,
@@ -348,10 +409,15 @@ def evaluate_and_check(
     )
 
     theorem_source = generate_check_source(formal_query, candidate["decision"])
-    check_path = case_directory / CHECK_FILENAME
+    check_path = model_directory / CHECK_FILENAME
     check_path.write_text(theorem_source, encoding="utf-8")
 
-    checked_text = _run_lean(check_path, trust_zero=True, timeout=timeout)
+    checked_text = _run_lean(
+        check_path,
+        trust_zero=True,
+        timeout=timeout,
+        working_directory=model_directory,
+    )
     checked = _parse_case_output(
         checked_text,
         expected_schema_version=CHECKED_SCHEMA_VERSION,

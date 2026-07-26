@@ -35,6 +35,10 @@ Lean's kernel is the checker. A failed proof is not automatically a refutation:
 `REFUTED` requires a checked proof of an explicit opposite; otherwise the
 status is `UNKNOWN`.
 
+Each manual verification artifact contains the exact tiny Lean project snapshot
+used for both passes. Its replay recipe is relative to that snapshot, so later
+edits to the working repository cannot silently change the imported model.
+
 The renderer consumes only a checked structured decision. It maps the
 decision's checked `RuleId` values to `sources.yaml`. A later LLM may polish
 wording, but it may not add facts, numbers, conclusions, or citations.
@@ -61,7 +65,7 @@ wording, but it may not add facts, numbers, conclusions, or citations.
 4. **Done:** run Lean twice: first to obtain its candidate `Decision`, then to
    kernel-check a concrete equality containing that decision. Preserve both
    Lean sources and both structured outputs.
-5. Render a plain-English answer from the result and exact rule map.
+5. **Next:** render a plain-English answer from the result and exact rule map.
 6. Only then add a constrained NL-to-`FormalQuery` adapter.
 
 A proposed feature belongs in v0 only if it makes one of these boxes visible

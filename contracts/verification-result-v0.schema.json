@@ -85,6 +85,7 @@
         "kernelCheck",
         "theoremName",
         "theoremSource",
+        "modelSnapshot",
         "replayCwd",
         "replayBuildCommand",
         "replayCommand"
@@ -104,9 +105,25 @@
           "type": "string",
           "minLength": 1
         },
+        "modelSnapshot": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "lean-toolchain",
+              "lakefile.toml",
+              "lake-manifest.json",
+              "CreatorCommerce.lean",
+              "CreatorCommerce/Section194R.lean",
+              "CreatorCommerce/CaseProtocol.lean"
+            ]
+          }
+        },
         "replayCwd": {
-          "type": "string",
-          "minLength": 1
+          "const": "model"
         },
         "replayBuildCommand": {
           "type": "array",
