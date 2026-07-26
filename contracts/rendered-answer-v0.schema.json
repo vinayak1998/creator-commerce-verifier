@@ -1,0 +1,321 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:creator-commerce-verifier:schema:rendered-answer-v0",
+  "title": "RenderedAnswer v0",
+  "description": "Deterministic presentation derived only from a checked VerificationResult and the exact source map.",
+  "$defs": {
+    "detail": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "value"],
+      "properties": {
+        "label": {"type": "string", "minLength": 1},
+        "value": {"type": "string", "minLength": 1}
+      }
+    },
+    "actSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceId", "title", "authority", "officialUrl"],
+      "properties": {
+        "sourceId": {"const": "ITA-1961-S194R"},
+        "title": {"const": "Income-tax Act, 1961 - Section 194R"},
+        "authority": {"const": "Central Board of Direct Taxes, Department of Revenue, Ministry of Finance, Government of India"},
+        "officialUrl": {"const": "https://www.incometaxindia.gov.in/w/section-194r-4"}
+      }
+    },
+    "circularSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceId", "title", "authority", "officialUrl"],
+      "properties": {
+        "sourceId": {"const": "CBDT-CIRCULAR-12-2022"},
+        "title": {"const": "CBDT Circular No. 12 of 2022"},
+        "authority": {"const": "Central Board of Direct Taxes, Department of Revenue, Ministry of Finance, Government of India"},
+        "officialUrl": {"const": "https://incometaxindia.gov.in/communications/circular/circular-no-12-2022.pdf"}
+      }
+    },
+    "citation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ruleId",
+        "leanId",
+        "location",
+        "encodedInterpretation",
+        "sources"
+      ],
+      "properties": {
+        "ruleId": {
+          "type": "string",
+          "enum": [
+            "IT-194R-SCOPE",
+            "IT-194R-RETAINED",
+            "IT-194R-THRESHOLD",
+            "IT-194R-RELEASEGATE"
+          ]
+        },
+        "leanId": {
+          "type": "string",
+          "enum": [
+            "s194rScope",
+            "influencerProduct",
+            "annualThreshold",
+            "inKindReleaseGate"
+          ]
+        },
+        "location": {"type": "string", "minLength": 1},
+        "encodedInterpretation": {"type": "string", "minLength": 1},
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"ruleId": {"const": "IT-194R-SCOPE"}},
+            "required": ["ruleId"]
+          },
+          "then": {
+            "properties": {
+              "leanId": {"const": "s194rScope"},
+              "location": {"const": "Section 194R(1), main clause"},
+              "encodedInterpretation": {"const": "A company provider supplies a resident creator a business/profession benefit and the encoded rate is 10 percent."},
+              "sources": {
+                "minItems": 1,
+                "maxItems": 1,
+                "prefixItems": [{"$ref": "#/$defs/actSource"}],
+                "items": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"ruleId": {"const": "IT-194R-RETAINED"}},
+            "required": ["ruleId"]
+          },
+          "then": {
+            "properties": {
+              "leanId": {"const": "influencerProduct"},
+              "location": {"const": "Question 6, social-media influencer example, official PDF pages 4-5"},
+              "encodedInterpretation": {"const": "A genuinely returned promotional product is not a benefit in this example; a retained product is."},
+              "sources": {
+                "minItems": 1,
+                "maxItems": 1,
+                "prefixItems": [{"$ref": "#/$defs/circularSource"}],
+                "items": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"ruleId": {"const": "IT-194R-THRESHOLD"}},
+            "required": ["ruleId"]
+          },
+          "then": {
+            "properties": {
+              "leanId": {"const": "annualThreshold"},
+              "location": {"const": "Section 194R(1), second proviso"},
+              "encodedInterpretation": {"const": "The v0 obligation does not trigger unless same-provider FY aggregate benefits exceed Rs 20,000."},
+              "sources": {
+                "minItems": 1,
+                "maxItems": 1,
+                "prefixItems": [{"$ref": "#/$defs/actSource"}],
+                "items": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"ruleId": {"const": "IT-194R-RELEASEGATE"}},
+            "required": ["ruleId"]
+          },
+          "then": {
+            "properties": {
+              "leanId": {"const": "inKindReleaseGate"},
+              "location": {"const": "Section 194R(1), first proviso; Circular 12/2022, Question 9, official PDF pages 5-6"},
+              "encodedInterpretation": {"const": "When TDS is due on this wholly in-kind benefit, payment must be ensured before release."},
+              "sources": {
+                "minItems": 2,
+                "maxItems": 2,
+                "prefixItems": [
+                  {"$ref": "#/$defs/actSource"},
+                  {"$ref": "#/$defs/circularSource"}
+                ],
+                "items": false
+              }
+            }
+          }
+        }
+      ]
+    },
+    "sourceStatus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["period", "retrievedOn", "reviewStatus"],
+      "properties": {
+        "period": {"const": "FY2024-25"},
+        "retrievedOn": {"type": "string", "format": "date"},
+        "reviewStatus": {"const": "needs_independent_tax_review"}
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "modelVersion",
+        "status",
+        "verificationStatus",
+        "summary",
+        "details",
+        "citations",
+        "disclaimer",
+        "sourceStatus"
+      ],
+      "properties": {
+        "schemaVersion": {"const": "rendered-answer-v0"},
+        "modelVersion": {"const": "in-s194r-fy2024-25-v0"},
+        "status": {"const": "PROVED"},
+        "verificationStatus": {"const": "PROVED"},
+        "summary": {"type": "string", "minLength": 1},
+        "details": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "items": {"$ref": "#/$defs/detail"}
+        },
+        "citations": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/citation"}
+        },
+        "disclaimer": {"type": "string", "minLength": 1},
+        "sourceStatus": {"$ref": "#/$defs/sourceStatus"}
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "modelVersion",
+        "status",
+        "verificationStatus",
+        "unknownReason",
+        "summary",
+        "details",
+        "citations",
+        "disclaimer"
+      ],
+      "properties": {
+        "schemaVersion": {"const": "rendered-answer-v0"},
+        "modelVersion": {"const": "in-s194r-fy2024-25-v0"},
+        "status": {"const": "UNKNOWN"},
+        "verificationStatus": {"const": "UNKNOWN"},
+        "unknownReason": {
+          "type": "string",
+          "enum": [
+            "LEAN_EVALUATION_FAILED",
+            "LEAN_CHECK_FAILED",
+            "INTERNAL_ERROR"
+          ]
+        },
+        "summary": {"type": "string", "minLength": 1},
+        "details": {
+          "type": "array",
+          "maxItems": 0,
+          "items": {"$ref": "#/$defs/detail"}
+        },
+        "citations": {
+          "type": "array",
+          "maxItems": 0,
+          "items": {"$ref": "#/$defs/citation"}
+        },
+        "disclaimer": {"type": "string", "minLength": 1}
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "modelVersion",
+        "status",
+        "verificationStatus",
+        "unknownReason",
+        "summary",
+        "details",
+        "citations",
+        "disclaimer",
+        "sourceStatus"
+      ],
+      "properties": {
+        "schemaVersion": {"const": "rendered-answer-v0"},
+        "modelVersion": {"const": "in-s194r-fy2024-25-v0"},
+        "status": {"const": "UNKNOWN"},
+        "verificationStatus": {"const": "UNKNOWN"},
+        "unknownReason": {"const": "UNSUPPORTED_INPUT"},
+        "summary": {"type": "string", "minLength": 1},
+        "details": {
+          "type": "array",
+          "maxItems": 0,
+          "items": {"$ref": "#/$defs/detail"}
+        },
+        "citations": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/citation"}
+        },
+        "disclaimer": {"type": "string", "minLength": 1},
+        "sourceStatus": {"$ref": "#/$defs/sourceStatus"}
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "modelVersion",
+        "status",
+        "verificationStatus",
+        "unknownReason",
+        "summary",
+        "details",
+        "citations",
+        "disclaimer"
+      ],
+      "properties": {
+        "schemaVersion": {"const": "rendered-answer-v0"},
+        "modelVersion": {"const": "in-s194r-fy2024-25-v0"},
+        "status": {"const": "UNKNOWN"},
+        "verificationStatus": {"type": "string", "enum": ["PROVED", "UNKNOWN"]},
+        "unknownReason": {"const": "SOURCE_MAPPING_FAILED"},
+        "summary": {"type": "string", "minLength": 1},
+        "details": {
+          "type": "array",
+          "maxItems": 0,
+          "items": {"$ref": "#/$defs/detail"}
+        },
+        "citations": {
+          "type": "array",
+          "maxItems": 0,
+          "items": {"$ref": "#/$defs/citation"}
+        },
+        "disclaimer": {"type": "string", "minLength": 1}
+      }
+    }
+  ]
+}

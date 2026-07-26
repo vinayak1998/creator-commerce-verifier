@@ -39,3 +39,14 @@ assurance layer is required for this teaching artifact.
 There is intentionally no `REFUTED` result in this assessment-only protocol.
 Adding a user-supplied claim to prove or refute would be a second intent and a
 scope change.
+
+## `RenderedAnswer v0`
+
+The presentation boundary contains only fixed prose over checked decision
+fields and citations resolved from checked Lean `RuleId` values. It preserves
+Lean's rule order and the exact public IDs, locations, and official URLs in
+the canonical, non-user-selectable `sources.yaml`. A missing, changed,
+duplicate, or inconsistent source relationship makes the presented answer
+`UNKNOWN/SOURCE_MAPPING_FAILED`; it never guesses a citation. Operational
+failure, checked unsupported input, and source-mapping failure are separate
+schema branches, so contradictory UNKNOWN states are invalid.

@@ -39,9 +39,10 @@ Each manual verification artifact contains the exact tiny Lean project snapshot
 used for both passes. Its replay recipe is relative to that snapshot, so later
 edits to the working repository cannot silently change the imported model.
 
-The renderer consumes only a checked structured decision. It maps the
-decision's checked `RuleId` values to `sources.yaml`. A later LLM may polish
-wording, but it may not add facts, numbers, conclusions, or citations.
+The deterministic renderer consumes only a checked structured decision. It
+maps the decision's checked `RuleId` values through the canonical, non-user-
+selectable `sources.yaml`; changed citation content fails closed. No LLM writes
+the answer, numbers, conclusion, or citations.
 
 ## Mapping to the public architecture
 
@@ -54,7 +55,7 @@ wording, but it may not add facts, numbers, conclusions, or citations.
 | Facts + theorems | Concrete facts plus an equality against `assess` |
 | Solver/prover | Lean reduction and kernel checking; no separate Z3 layer |
 | Answer + proof | Checked `Decision`, including `RuleId` values |
-| De-formalizer | Deferred: deterministic templates over the checked decision |
+| De-formalizer | Deterministic templates over the checked decision |
 
 ## Build order
 
@@ -65,8 +66,9 @@ wording, but it may not add facts, numbers, conclusions, or citations.
 4. **Done:** run Lean twice: first to obtain its candidate `Decision`, then to
    kernel-check a concrete equality containing that decision. Preserve both
    Lean sources and both structured outputs.
-5. **Next:** render a plain-English answer from the result and exact rule map.
-6. Only then add a constrained NL-to-`FormalQuery` adapter.
+5. **Done:** render a plain-English answer from checked fields and map only its
+   checked `RuleId` values through the exact four-rule source map.
+6. **Next:** add a constrained NL-to-`FormalQuery` adapter.
 
 A proposed feature belongs in v0 only if it makes one of these boxes visible
 or executes the one supported question family. Everything else stays deferred.
