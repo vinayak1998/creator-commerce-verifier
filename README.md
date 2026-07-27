@@ -23,10 +23,11 @@ The deterministic, no-LLM path is complete:
   cited-answer renderer; and
 - no duplicate Python/JavaScript tax engine.
 
-The constrained natural-language formalizer is now present. It may only propose
-the visible three-fact query or return `UNKNOWN`, and it deliberately stops
-before Lean. The next milestone is one local confirmation screen that connects
-this proposal to the already-working checked and rendered path.
+The constrained natural-language formalizer and one loopback-only confirmation
+screen are now present. The model may only propose the visible three-fact query
+or return `UNKNOWN`; a `READY` proposal reaches Lean only after the user
+confirms the exact displayed `FormalQuery`. The next milestone is the final
+article-facing hardening and documentation pass, not another domain feature.
 
 ## The question v0 models
 
@@ -102,7 +103,29 @@ rupees to paise, displays all three facts and fixed assumptions, and says that
 Lean has not run. Missing configuration, refusal, malformed output, or an
 uncertain/out-of-scope question is `UNKNOWN`.
 
-## The intended end-to-end demo
+## Run the local UI
+
+With the same `OPENAI_API_KEY` and explicit `OPENAI_MODEL` environment
+variables set, run:
+
+```bash
+python -m verifier.web
+```
+
+The command binds only to the printed `http://127.0.0.1:8765` loopback URL.
+The first screen sends the natural-language question to the untrusted
+formalizer. A `READY` response displays the original question, exactly three
+facts in rupees and paise, every fixed assumption, and the exact `FormalQuery`.
+Lean has not run at that point. A separate confirmation submits only a
+short-lived opaque token; the server retrieves the unchanged proposal, runs the
+existing two-pass Lean boundary, and returns the deterministic cited answer and
+evidence location. Confirmed evidence is written beneath `.artifacts/`.
+
+Without both provider settings, the page remains usable as an explanation of
+the flow but formalization fails closed to `UNKNOWN`. This is a local teaching
+server, not a production deployment.
+
+## The implemented end-to-end demo
 
 ```text
 question in natural language

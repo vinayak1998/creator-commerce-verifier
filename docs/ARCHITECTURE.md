@@ -14,8 +14,9 @@ flowchart LR
     S["Official rule locations"] --> W["Versioned Lean world model"]
   end
   subgraph Online["Online: verify one question"]
-    Q["Natural-language question"] --> F["Visible typed facts"]
-    F --> G["Deterministic Lean goal"]
+    Q["Natural-language question"] --> F["Visible untrusted typed proposal"]
+    F --> C["Explicit user confirmation"]
+    C --> G["Deterministic Lean goal"]
     G --> K["Lean kernel"]
     K --> A["Checked decision + RuleIds"]
     A --> R["Template-rendered answer + citations"]
@@ -29,15 +30,20 @@ The natural-language formalizer is untrusted. Before proof, its interpretation
 must be visible as exactly three facts and the fixed assumptions. Missing or
 uncertain information yields `UNKNOWN`.
 
+`READY` is not confirmation. The local UI stores the validated proposal
+server-side behind a bounded, one-time token; only a separate confirmation
+request sends that unchanged `FormalQuery` to Lean. The screen sequences the
+existing components and contains no tax calculation.
+
 The compiler is deterministic. It may emit a concrete Lean equality to check,
 but it must never contain a second implementation of the tax calculation.
 Lean's kernel is the checker. A failed proof is not automatically a refutation:
 `REFUTED` requires a checked proof of an explicit opposite; otherwise the
 status is `UNKNOWN`.
 
-Each manual verification artifact contains the exact tiny Lean project snapshot
-used for both passes. Its replay recipe is relative to that snapshot, so later
-edits to the working repository cannot silently change the imported model.
+Each verification artifact contains the exact tiny Lean project snapshot used
+for both passes. Its replay recipe is relative to that snapshot, so later edits
+to the working repository cannot silently change the imported model.
 
 The deterministic renderer consumes only a checked structured decision. It
 maps the decision's checked `RuleId` values through the canonical, non-user-
@@ -71,8 +77,10 @@ the answer, numbers, conclusion, or citations.
 6. **Done:** add a constrained NL-to-`FormalQuery` proposal adapter. It uses a
    provider-only strict-output schema, then deterministically validates the
    public proposal and stops before Lean.
-7. **Next:** add one local screen that requires confirmation before sending the
-   exact proposed `FormalQuery` to the existing verifier.
+7. **Done:** add one loopback-only local screen that requires confirmation
+   before sending the exact proposed `FormalQuery` to the existing verifier.
+8. **Next:** complete the article-facing walkthrough and final hardening, then
+   freeze v0 without adding another intent or tax branch.
 
 A proposed feature belongs in v0 only if it makes one of these boxes visible
 or executes the one supported question family. Everything else stays deferred.

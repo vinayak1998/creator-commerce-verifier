@@ -20,7 +20,9 @@ Every answer assumes all of the following:
 - the product is wholly in kind;
 - the creator bears the tax and the provider does not gross it up;
 - no TDS has previously been deducted;
-- prior benefits do not exceed Rs 20,000;
+- for an answered result, prior benefits do not exceed Rs 20,000; a higher
+  entered total is accepted only for Lean's checked `UNKNOWN`/`unsupported`
+  boundary;
 - the entered FMV, disposition, and prior-benefit total are true; and
 - the online v0 accepts whole-rupee inputs, represented internally as paise.
 
@@ -55,8 +57,9 @@ another intent is a scope change, not a prompt tweak.
 Unsupported, missing, contradictory, or uncertain inputs must become
 `UNKNOWN`; they must never be filled in by an LLM.
 
-One minimal local confirmation screen may expose this exact path. It is an
-interface over the frozen scope, not permission to add intents or tax branches.
+One minimal, loopback-only confirmation screen exposes this exact path. It is
+an interface over the frozen scope, not permission to add intents, editable
+facts, or tax branches.
 
 ## What the proof does and does not establish
 
