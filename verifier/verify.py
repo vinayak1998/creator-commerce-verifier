@@ -235,6 +235,26 @@ def verify_formal_query(
     )
 
 
+def verify_and_render_formal_query(
+    formal_query: dict[str, Any],
+    *,
+    artifacts_root: Path,
+    case_name: Optional[str] = None,
+    timeout: float = 30.0,
+) -> tuple[VerificationRun, dict[str, Any]]:
+    """Run the existing checked pipeline and persist its deterministic answer."""
+
+    run = verify_formal_query(
+        formal_query,
+        artifacts_root=artifacts_root,
+        case_name=case_name,
+        timeout=timeout,
+    )
+    rendered = render_verification_result(run.result)
+    write_rendered_artifacts(run.artifact_directory, rendered)
+    return run, rendered
+
+
 def _unknown_proposal(reason: str, details: str) -> dict[str, Any]:
     proposal = {
         "schemaVersion": "formalization-proposal-v0",
@@ -309,20 +329,13 @@ def main() -> int:
         return 2
 
     try:
-        run = verify_formal_query(
+        run, rendered = verify_and_render_formal_query(
             formal_query,
             artifacts_root=arguments.artifacts_root,
             case_name=arguments.case_name,
             timeout=arguments.timeout,
         )
     except (OSError, ValueError):
-        _print_json(_internal_error_result(formal_query), stream=sys.stdout)
-        return 1
-
-    try:
-        rendered = render_verification_result(run.result)
-        write_rendered_artifacts(run.artifact_directory, rendered)
-    except OSError:
         _print_json(_internal_error_result(formal_query), stream=sys.stdout)
         return 1
 
