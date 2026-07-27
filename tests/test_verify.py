@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import copy
 import io
 import json
@@ -11,9 +12,14 @@ from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest import mock
 
-from verifier.contracts import VERIFICATION_RESULT, load_json, validate
+from verifier.contracts import (
+    REPOSITORY_ROOT,
+    VERIFICATION_RESULT,
+    load_json,
+    validate,
+)
 from verifier.lean_boundary import LeanBoundaryError
-from verifier.verify import main, verify_formal_query
+from verifier.verify import _positive_timeout, main, verify_formal_query
 
 
 RETAINED_THIRTY_THOUSAND = {
@@ -118,10 +124,8 @@ class ManualJsonCliTests(unittest.TestCase):
     def test_cli_runs_the_canonical_query_end_to_end(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            query_path = root / "query.json"
-            query_path.write_text(
-                json.dumps(RETAINED_THIRTY_THOUSAND), encoding="utf-8"
-            )
+            query_path = REPOSITORY_ROOT / "examples" / "retained-30000.json"
+            self.assertEqual(load_json(query_path), RETAINED_THIRTY_THOUSAND)
             completed = subprocess.run(
                 [
                     sys.executable,
@@ -143,6 +147,11 @@ class ManualJsonCliTests(unittest.TestCase):
             result = json.loads(completed.stdout)
             self.assertEqual(result["status"], "PROVED")
             self.assertEqual(result["schemaVersion"], "rendered-answer-v0")
+            details = {item["label"]: item["value"] for item in result["details"]}
+            self.assertEqual(details["Current product qualifies"], "Yes")
+            self.assertEqual(details["Financial-year aggregate"], "₹30,000.00")
+            self.assertEqual(details["Modeled TDS due"], "₹3,000.00")
+            self.assertEqual(details["Release gate required"], "Yes")
             self.assertEqual(
                 [citation["ruleId"] for citation in result["citations"]],
                 [
@@ -187,12 +196,21 @@ class ManualJsonCliTests(unittest.TestCase):
         self.assertFalse(artifacts_created)
 
     def test_cli_uses_nonzero_exit_for_checked_unsupported_result(self) -> None:
-        query = copy.deepcopy(RETAINED_THIRTY_THOUSAND)
-        query["facts"]["priorBenefitsPaise"] = 2_000_100
+        expected_query = {
+            "schemaVersion": "formal-query-v0",
+            "modelVersion": "in-s194r-fy2024-25-v0",
+            "facts": {
+                "productFmvPaise": 100_000,
+                "productDisposition": "retained",
+                "priorBenefitsPaise": 2_000_100,
+            },
+        }
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            query_path = root / "query.json"
-            query_path.write_text(json.dumps(query), encoding="utf-8")
+            query_path = (
+                REPOSITORY_ROOT / "examples" / "unsupported-priors-20001.json"
+            )
+            self.assertEqual(load_json(query_path), expected_query)
             completed = subprocess.run(
                 [
                     sys.executable,
@@ -209,11 +227,32 @@ class ManualJsonCliTests(unittest.TestCase):
                 text=True,
                 timeout=30,
             )
+            certificate = load_json(
+                root / "artifacts" / "unsupported-cli" / "certificate.json"
+            )
 
         self.assertEqual(completed.returncode, 1)
         result = json.loads(completed.stdout)
         self.assertEqual(result["status"], "UNKNOWN")
         self.assertEqual(result["unknownReason"], "UNSUPPORTED_INPUT")
+        self.assertEqual(
+            [citation["ruleId"] for citation in result["citations"]],
+            ["IT-194R-THRESHOLD"],
+        )
+        self.assertEqual(certificate["formalQuery"], expected_query)
+        self.assertEqual(certificate["proof"]["kernelCheck"], "PASSED")
+        self.assertEqual(certificate["decision"]["kind"], "unsupported")
+        self.assertEqual(
+            certificate["decision"]["reason"],
+            "priorBenefitsNeedPriorTds",
+        )
+
+    def test_timeout_parser_rejects_non_finite_values(self) -> None:
+        for value in ("nan", "inf", "-inf", "0", "-1"):
+            with self.subTest(value=value):
+                with self.assertRaises(argparse.ArgumentTypeError):
+                    _positive_timeout(value)
+        self.assertEqual(_positive_timeout("0.25"), 0.25)
 
     def test_valid_query_artifact_failure_is_internal_not_malformed(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

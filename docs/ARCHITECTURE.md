@@ -79,11 +79,12 @@ the answer, numbers, conclusion, or citations.
    public proposal and stops before Lean.
 7. **Done:** add one loopback-only local screen that requires confirmation
    before sending the exact proposed `FormalQuery` to the existing verifier.
-8. **Next:** complete the article-facing walkthrough and final hardening, then
-   freeze v0 without adding another intent or tax branch.
+8. **Done:** add the article-facing walkthrough, a reproducible checked
+   `UNKNOWN`, and final replay-boundary hardening.
 
-A proposed feature belongs in v0 only if it makes one of these boxes visible
-or executes the one supported question family. Everything else stays deferred.
+The implementation roadmap is complete and v0 is frozen. A future proposal
+must begin with explicit versioned scope; it cannot enter v0 as an interface or
+prompt tweak. The [walkthrough](WALKTHROUGH.md) exercises the finished path.
 
 ## Reference
 

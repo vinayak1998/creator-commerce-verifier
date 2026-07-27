@@ -26,8 +26,9 @@ The deterministic, no-LLM path is complete:
 The constrained natural-language formalizer and one loopback-only confirmation
 screen are now present. The model may only propose the visible three-fact query
 or return `UNKNOWN`; a `READY` proposal reaches Lean only after the user
-confirms the exact displayed `FormalQuery`. The next milestone is the final
-article-facing hardening and documentation pass, not another domain feature.
+confirms the exact displayed `FormalQuery`. The article-supporting v0 is now
+complete and frozen. New tax questions, current-law changes, or production
+deployment require an explicit later version rather than another v0 feature.
 
 ## The question v0 models
 
@@ -45,19 +46,23 @@ before reading the code.
 
 ## Run the proof checks
 
-Install Lean through `elan`, then run:
+Use Python 3.9 or newer and install Lean through `elan`. The checked-in
+`lean-toolchain` selects the exact Lean release. Then run:
 
 ```bash
+python -m pip install -r requirements.txt
 lake build
+python -m unittest discover -v
 ```
 
-That command compiles the model and asks Lean's kernel to check the concrete
+The build compiles the model and asks Lean's kernel to check the concrete
 examples in [`CreatorCommerce/Section194R.lean`](CreatorCommerce/Section194R.lean).
+The Python suite checks the contracts, generated-case boundary, verifier,
+renderer, formalizer, and local UI.
 
 Validate the canonical JSON query with:
 
 ```bash
-python -m pip install -r requirements.txt
 python -m verifier.contracts formal-query-v0 examples/retained-30000.json
 ```
 
@@ -79,8 +84,8 @@ for `PROVED`; every `UNKNOWN`, including a checked unsupported result, exits
 nonzero.
 
 Use `--format answer-text` for plain text or `--format verification-json` for
-the effective verification envelope on standard output. The immutable raw
-Lean certificate remains in `certificate.json`; if citation mapping fails, the
+the effective verification envelope on standard output. The raw checked Lean
+certificate remains in `certificate.json`; if citation mapping fails, the
 effective envelope reports `UNKNOWN/SOURCE_MAPPING_FAILED` instead of hiding
 that failure behind the earlier kernel result.
 
@@ -136,9 +141,11 @@ question in natural language
 ```
 
 The language model is allowed to propose the typed interpretation. It is not
-the legal oracle, calculator, proof checker, or citation generator. Read the
+the legal oracle, calculator, proof checker, or citation generator. Follow the
+[end-to-end walkthrough](docs/WALKTHROUGH.md) to inspect and replay both a
+`PROVED` answer and a Lean-checked `UNKNOWN`, then read the
 [architecture note](docs/ARCHITECTURE.md) for the component-by-component trust
-boundary and implementation order.
+boundary.
 
 ## Why this repository is separate
 
