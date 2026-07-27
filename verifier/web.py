@@ -329,13 +329,17 @@ def _result_page(run: VerificationRun, rendered: dict[str, Any]) -> str:
     if proof is None:
         evidence = "<p>No Lean kernel proof was produced.</p>"
     else:
+        replay_directory = run.artifact_directory / proof["replayCwd"]
+        replay_build = " ".join(proof["replayBuildCommand"])
         replay = " ".join(proof["replayCommand"])
         evidence = f"""
 <dl>
   <dt>Kernel check</dt><dd>{_escape(proof['kernelCheck'])}</dd>
   <dt>Theorem</dt><dd>{_escape(proof['theoremName'])}</dd>
-  <dt>Replay command</dt><dd><code>{_escape(replay)}</code></dd>
   <dt>Artifact directory</dt><dd><code>{_escape(run.artifact_directory)}</code></dd>
+  <dt>Replay directory</dt><dd><code>{_escape(replay_directory)}</code></dd>
+  <dt>Replay build command</dt><dd><code>{_escape(replay_build)}</code></dd>
+  <dt>Replay kernel command</dt><dd><code>{_escape(replay)}</code></dd>
 </dl>"""
 
     body = f"""

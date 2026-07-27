@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "formal-query-v0",
+  "modelVersion": "in-s194r-fy2024-25-v0",
+  "facts": {
+    "productFmvPaise": 100000,
+    "productDisposition": "retained",
+    "priorBenefitsPaise": 2000100
+  }
+}

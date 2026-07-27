@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import math
 import re
 import sys
 import uuid
@@ -274,7 +275,7 @@ def _print_json(value: Any, *, stream: Any) -> None:
 
 def _positive_timeout(value: str) -> float:
     timeout = float(value)
-    if timeout <= 0:
+    if not math.isfinite(timeout) or timeout <= 0:
         raise argparse.ArgumentTypeError("timeout must be positive")
     return timeout
 

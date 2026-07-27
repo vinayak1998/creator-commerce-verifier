@@ -421,6 +421,12 @@ class ConfirmedEndToEndWebTests(unittest.TestCase):
             self.assertIn("Kernel check", result)
             self.assertIn("PASSED", result)
             self.assertTrue(any(artifacts_root.iterdir()))
+            artifact_directory = next(artifacts_root.iterdir())
+            self.assertIn("Replay directory", result)
+            self.assertIn(str(artifact_directory / "model"), result)
+            self.assertIn("Replay build command", result)
+            self.assertIn("<code>lake build</code>", result)
+            self.assertIn("Replay kernel command", result)
 
             replay_status, _headers, replay_body = invoke_wsgi(
                 app,

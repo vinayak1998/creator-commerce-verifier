@@ -50,9 +50,14 @@ PROOF = {
 
 
 class FormalQueryContractTests(unittest.TestCase):
-    def test_canonical_fixture_is_valid(self) -> None:
-        query = load_json(REPOSITORY_ROOT / "examples" / "retained-30000.json")
-        validate(FORMAL_QUERY, query)
+    def test_public_fixtures_are_valid(self) -> None:
+        for filename in (
+            "retained-30000.json",
+            "unsupported-priors-20001.json",
+        ):
+            with self.subTest(filename=filename):
+                query = load_json(REPOSITORY_ROOT / "examples" / filename)
+                validate(FORMAL_QUERY, query)
 
     def test_exact_three_fact_boundary_rejects_extra_fact(self) -> None:
         query = copy.deepcopy(VALID_QUERY)
